@@ -178,8 +178,6 @@ notifications. `terraform init && terraform validate` pass; `apply` provisions,
   alert.
 - App health surfaced at `GET /health` (ADX + SQL state).
 
-See `docs/COST_ANALYSIS.md` for the full cost breakdown.
-
 ---
 
 ## 10. Repository map
@@ -194,6 +192,6 @@ frontend/                               # React dashboard (+ Dockerfile, nginx)
 k8s/                                    # Kubernetes manifests (kustomize)
 terraform/                              # Azure IaC
 azure-pipelines.yml                     # CI/CD (Azure DevOps)
-test/  docs/                            # unit tests; report, cost analysis, video script
+test/  docs/                            # unit tests; project report
 Dockerfile docker-compose.yaml          # containerisation
 ```

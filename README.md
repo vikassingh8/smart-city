@@ -173,13 +173,11 @@ terraform apply        # provision (billable)   ·   terraform destroy  # ~$0
   AKS, the Secrets Store CSI driver mounts them (`k8s/13-secretproviderclass.yaml`).
 - **Monitoring:** **Application Insights** auto-instruments the API (set
   `APPLICATIONINSIGHTS_CONNECTION_STRING`); logs go to **Log Analytics**.
-- **Cost:** an Azure **budget** with email alerts; see `docs/COST_ANALYSIS.md`.
+- **Cost:** an Azure **budget** with email alerts (Terraform + `terraform/`).
 
 ## Documentation
 
-- `docs/PROJECT_REPORT.md` — full report (requirements, architecture, design).
-- `docs/COST_ANALYSIS.md` — cost estimation & optimisation.
-- `docs/VIDEO_SCRIPT.md` — 10–15 min walkthrough script.
+- `docs/PROJECT_REPORT.md` - full report (requirements, architecture, design).
 
 ## Message format
 
