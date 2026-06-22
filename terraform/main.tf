@@ -1,11 +1,11 @@
 # Azure footprint for the platform: resource group, Log Analytics + App
-# Insights, ACR, AKS (autoscaling + monitoring add-on), serverless Azure SQL,
-# Azure Data Explorer (time-series), Key Vault, Monitor alerts, and a Cost
-# Management budget.
+# Insights, ACR, AKS (autoscaling + monitoring add-on), Key Vault, Monitor
+# alerts, and a Cost Management budget.
 #
-# Costs are kept low with a single burstable AKS node (autoscaler min 1),
-# serverless SQL with auto-pause, a Dev-SKU ADX cluster with auto-stop, and free
-# monitoring tiers. terraform destroy returns to roughly zero.
+# Free-first: the relational store reuses an existing free Azure SQL database
+# and the time-series store uses a free Azure Data Explorer cluster (created
+# outside Terraform at dataexplorer.azure.com/freecluster), so neither is
+# provisioned here. AKS is the only meaningful cost; destroy returns to ~zero.
 
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
@@ -78,89 +78,6 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
   skip_service_principal_aad_check = true
 }
 
-# ------------------------------------------------------------ Azure SQL
-resource "azurerm_mssql_server" "main" {
-  name                         = "${var.prefix}-sql"
-  resource_group_name          = azurerm_resource_group.main.name
-  location                     = azurerm_resource_group.main.location
-  version                      = "12.0"
-  administrator_login          = var.sql_admin_user
-  administrator_login_password = var.sql_admin_password
-  minimum_tls_version          = "1.2"
-}
-
-resource "azurerm_mssql_database" "main" {
-  name                        = "smartcity"
-  server_id                   = azurerm_mssql_server.main.id
-  sku_name                    = "GP_S_Gen5_1" # serverless, 1 vCore
-  min_capacity                = 0.5
-  auto_pause_delay_in_minutes = 60 # auto-pause when idle -> ~$0
-  max_size_gb                 = 2
-}
-
-# Allow other Azure services (e.g. AKS) to reach SQL.
-resource "azurerm_mssql_firewall_rule" "azure_services" {
-  name             = "AllowAzureServices"
-  server_id        = azurerm_mssql_server.main.id
-  start_ip_address = "0.0.0.0"
-  end_ip_address   = "0.0.0.0"
-}
-
-# --------------------------------------------------- Azure Data Explorer
-# Time-series store for sensor readings (the rubric's named time-series DB).
-# Dev SKU + auto-stop keep cost low; terraform destroy returns to ~zero.
-resource "azurerm_kusto_cluster" "main" {
-  name                = "${var.prefix}adx"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  sku {
-    name     = var.adx_sku
-    capacity = 1
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  # Near-real-time ingestion for the dashboard; auto-stop when idle.
-  streaming_ingestion_enabled = true
-  auto_stop_enabled           = true
-}
-
-resource "azurerm_kusto_database" "main" {
-  name                = "smartcity"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-  cluster_name        = azurerm_kusto_cluster.main.name
-}
-
-# Let AKS pods (kubelet managed identity) ingest into and query the database,
-# so no ADX credentials need to be stored anywhere.
-resource "azurerm_kusto_database_principal_assignment" "aks_ingestor" {
-  name                = "aks-ingestor"
-  resource_group_name = azurerm_resource_group.main.name
-  cluster_name        = azurerm_kusto_cluster.main.name
-  database_name       = azurerm_kusto_database.main.name
-
-  tenant_id      = data.azurerm_client_config.current.tenant_id
-  principal_id   = azurerm_kubernetes_cluster.main.kubelet_identity[0].object_id
-  principal_type = "App"
-  role           = "Ingestor"
-}
-
-resource "azurerm_kusto_database_principal_assignment" "aks_viewer" {
-  name                = "aks-viewer"
-  resource_group_name = azurerm_resource_group.main.name
-  cluster_name        = azurerm_kusto_cluster.main.name
-  database_name       = azurerm_kusto_database.main.name
-
-  tenant_id      = data.azurerm_client_config.current.tenant_id
-  principal_id   = azurerm_kubernetes_cluster.main.kubelet_identity[0].object_id
-  principal_type = "App"
-  role           = "Viewer"
-}
-
 # ------------------------------------------------------------ Key Vault
 resource "azurerm_key_vault" "main" {
   name                       = "${var.prefix}-kv"
@@ -186,9 +103,17 @@ resource "azurerm_key_vault" "main" {
   }
 }
 
-resource "azurerm_key_vault_secret" "sql_password" {
-  name         = "SQL-PASSWORD"
-  value        = var.sql_admin_password
+# Connection details for the existing free Azure SQL database (reused, not
+# created here). The password is provided via TF_VAR_sql_admin_password.
+resource "azurerm_key_vault_secret" "sql_server" {
+  name         = "SQL-SERVER"
+  value        = var.sql_server_fqdn
+  key_vault_id = azurerm_key_vault.main.id
+}
+
+resource "azurerm_key_vault_secret" "sql_database" {
+  name         = "SQL-DATABASE"
+  value        = var.sql_database
   key_vault_id = azurerm_key_vault.main.id
 }
 
@@ -198,15 +123,10 @@ resource "azurerm_key_vault_secret" "sql_user" {
   key_vault_id = azurerm_key_vault.main.id
 }
 
-resource "azurerm_key_vault_secret" "sql_server" {
-  name         = "SQL-SERVER"
-  value        = azurerm_mssql_server.main.fully_qualified_domain_name
-  key_vault_id = azurerm_key_vault.main.id
-}
-
-resource "azurerm_key_vault_secret" "sql_database" {
-  name         = "SQL-DATABASE"
-  value        = azurerm_mssql_database.main.name
+resource "azurerm_key_vault_secret" "sql_password" {
+  count        = var.sql_admin_password == "" ? 0 : 1
+  name         = "SQL-PASSWORD"
+  value        = var.sql_admin_password
   key_vault_id = azurerm_key_vault.main.id
 }
 

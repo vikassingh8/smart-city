@@ -10,20 +10,16 @@ output "acr_login_server" {
   value = azurerm_container_registry.main.login_server
 }
 
-output "sql_server_fqdn" {
-  value = azurerm_mssql_server.main.fully_qualified_domain_name
-}
-
 output "key_vault_name" {
   value = azurerm_key_vault.main.name
 }
 
-output "adx_query_uri" {
-  value = azurerm_kusto_cluster.main.uri
+output "sql_server_fqdn" {
+  value = var.sql_server_fqdn
 }
 
-output "adx_database" {
-  value = azurerm_kusto_database.main.name
+output "adx_query_uri" {
+  value = var.adx_query_uri
 }
 
 output "app_insights_connection_string" {

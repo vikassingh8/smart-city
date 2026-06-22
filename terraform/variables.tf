@@ -21,15 +21,37 @@ variable "resource_group_name" {
   default = "smartcity-rg"
 }
 
+# Existing free Azure SQL database (reused, not created). Override if different.
+variable "sql_server_fqdn" {
+  description = "FQDN of the existing Azure SQL server"
+  type        = string
+  default     = "mscsql.database.windows.net"
+}
+
+variable "sql_database" {
+  description = "Existing Azure SQL database name"
+  type        = string
+  default     = "free-sql-db-7705584"
+}
+
 variable "sql_admin_user" {
   type    = string
   default = "vikassingh"
 }
 
 variable "sql_admin_password" {
-  description = "Azure SQL admin password (pass via TF_VAR_sql_admin_password, never commit)"
+  description = "SQL password, stored in Key Vault (pass via TF_VAR_sql_admin_password). Empty skips the secret."
   type        = string
+  default     = ""
   sensitive   = true
+}
+
+# Free Azure Data Explorer cluster query URI (created at
+# dataexplorer.azure.com/freecluster). Used for reference/outputs.
+variable "adx_query_uri" {
+  description = "Free ADX cluster query URI"
+  type        = string
+  default     = ""
 }
 
 variable "aks_node_count_min" {
@@ -48,12 +70,6 @@ variable "aks_vm_size" {
   default     = "Standard_B2s"
 }
 
-variable "adx_sku" {
-  description = "Azure Data Explorer SKU (Dev/test single node keeps cost low)"
-  type        = string
-  default     = "Dev(No SLA)_Standard_E2a_v4"
-}
-
 variable "budget_amount" {
   description = "Monthly budget (USD) for cost alerts"
   type        = number
@@ -62,5 +78,5 @@ variable "budget_amount" {
 
 variable "alert_email" {
   type    = string
-  default = "vikassingh.dnagrowth@gmail.com"
+  default = "singhvikas872@gmail.com"
 }

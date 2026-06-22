@@ -3,7 +3,15 @@
 subscription_id    = "41569ced-f010-4870-b88b-dd724bd142b7"
 location           = "centralindia"
 prefix             = "smartcity"
-sql_admin_user     = "vikassingh"
+
+# Reused free Azure SQL (not created by Terraform)
+sql_admin_user  = "vikassingh"
+sql_server_fqdn = "mscsql.database.windows.net"
+sql_database    = "free-sql-db-7705584"
 # sql_admin_password = "set via TF_VAR_sql_admin_password"
-budget_amount      = 10
-alert_email        = "vikassingh.dnagrowth@gmail.com"
+
+# Free ADX cluster query URI (created at dataexplorer.azure.com/freecluster)
+# adx_query_uri = "https://<your-free-cluster>.<region>.kusto.windows.net"
+
+budget_amount = 10
+alert_email   = "singhvikas872@gmail.com"
