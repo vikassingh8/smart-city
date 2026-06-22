@@ -67,7 +67,7 @@ variable "aks_node_count_max" {
 variable "aks_vm_size" {
   description = "Cheapest burstable size keeps cost low"
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B2s_v2"
 }
 
 variable "budget_amount" {
