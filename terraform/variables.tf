@@ -65,9 +65,9 @@ variable "aks_node_count_max" {
 }
 
 variable "aks_vm_size" {
-  description = "Cheapest burstable size keeps cost low"
+  description = "Small 2-vCPU node; cheapest size that is both allowed and has quota in the region"
   type        = string
-  default     = "Standard_B2s_v2"
+  default     = "Standard_D2as_v4"
 }
 
 variable "budget_amount" {
