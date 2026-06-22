@@ -66,6 +66,10 @@ stages:
                     scriptLocation: 'inlineScript'
                     inlineScript: |
                       az aks get-credentials -g $(AKS_RESOURCE_GROUP) -n $(AKS_CLUSTER_NAME) --overwrite-existing
+                      kubectl apply -f k8s/00-namespace.yaml
+                      kubectl -n smart-city create configmap spark-job \
+                        --from-file=stream.py=backend/spark/stream.py \
+                        --dry-run=client -o yaml | kubectl apply -f -
                       cd k8s
                       kustomize edit set image \
                         smart-city-backend=$(backendImage):$(tag) \
@@ -91,6 +95,10 @@ stages:
                     scriptLocation: 'inlineScript'
                     inlineScript: |
                       az aks get-credentials -g $(AKS_RESOURCE_GROUP) -n $(AKS_CLUSTER_NAME) --overwrite-existing
+                      kubectl apply -f k8s/00-namespace.yaml
+                      kubectl -n smart-city create configmap spark-job \
+                        --from-file=stream.py=backend/spark/stream.py \
+                        --dry-run=client -o yaml | kubectl apply -f -
                       cd k8s
                       kustomize edit set image \
                         smart-city-backend=$(backendImage):$(tag) \
