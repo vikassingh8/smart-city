@@ -1,0 +1,46 @@
+# Stream processor - Apache Spark Structured Streaming. Mounts the job from a
+# ConfigMap and submits it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-job
+  namespace: smart-city
+data:
+  # stream.py is injected here by `kubectl create configmap` in CI, or paste it.
+  # Kept as a pointer so the manifest stays readable; see scripts/load-spark-configmap.sh
+  PLACEHOLDER: "Populate with: kubectl -n smart-city create configmap spark-job --from-file=backend/spark/stream.py -o yaml --dry-run=client | kubectl apply -f -"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-processor
+  namespace: smart-city
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: spark-processor }
+  template:
+    metadata:
+      labels: { app: spark-processor }
+    spec:
+      containers:
+        - name: spark
+          image: apache/spark:3.5.1
+          command:
+            - /opt/spark/bin/spark-submit
+            - --packages
+            - org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+            - --conf
+            - spark.jars.ivy=/tmp/.ivy2
+            - /app/stream.py
+          env:
+            - { name: KAFKA_BOOTSTRAP, value: "kafka:9092" }
+          volumeMounts:
+            - { name: job, mountPath: /app }
+          resources:
+            requests: { cpu: "500m", memory: "1Gi" }
+            limits: { cpu: "1500m", memory: "2Gi" }
+      volumes:
+        - name: job
+          configMap:
+            name: spark-job

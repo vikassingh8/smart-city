@@ -1,0 +1,29 @@
+# Kustomize entrypoint - applies the full stack with one command:
+#   kubectl apply -k k8s/
+#
+# CI/CD overrides the image tags to the ACR-published versions with:
+#   kustomize edit set image smart-city-backend=<acr-login-server>/smart-city-backend:<sha>
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: smart-city
+resources:
+  - 00-namespace.yaml
+  - 01-configmap.yaml
+  - 03-kafka.yaml
+  - 05-topic-setup-job.yaml
+  - 06-producer.yaml
+  - 07-spark-processor.yaml
+  - 09-storage.yaml
+  - 10-api.yaml
+  - 11-frontend.yaml
+  - 12-rbac.yaml
+# Secrets are applied separately (kubectl create secret / Key Vault CSI), so the
+# example secret and SecretProviderClass are intentionally NOT listed here.
+
+images:
+  - name: smart-city-backend
+    newName: smart-city-backend
+    newTag: latest
+  - name: smart-city-frontend
+    newName: smart-city-frontend
+    newTag: latest

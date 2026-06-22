@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="600" viewBox="0 0 980 600" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="rel" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+      <circle cx="6" cy="6" r="4" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
+    </marker>
+    <marker id="crow" markerWidth="16" markerHeight="16" refX="2" refY="8" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M14,2 L2,8 L14,14 M14,8 L4,8" fill="none" stroke="#475569" stroke-width="1.5"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="980" height="600" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="30" y="40" font-size="22" font-weight="700" fill="#0f172a">Smart City Database Design</text>
+
+  <!-- ============ Azure SQL table ============ -->
+  <g>
+    <rect x="40" y="90" width="360" height="40" rx="8" fill="#16a34a"/>
+    <rect x="40" y="110" width="360" height="20" fill="#16a34a"/>
+    <text x="60" y="116" font-size="15" font-weight="700" fill="#ffffff">dbo.sensors</text>
+    <text x="380" y="116" font-size="11" fill="#dcfce7" text-anchor="end">Azure SQL, relational</text>
+
+    <rect x="40" y="130" width="360" height="270" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+
+    <text x="60" y="160" font-size="13" font-weight="700" fill="#0f172a">PK  sensor_id</text>
+    <text x="380" y="160" font-size="12" fill="#475569" text-anchor="end">NVARCHAR(50)</text>
+    <line x1="40" y1="172" x2="400" y2="172" stroke="#bbf7d0" stroke-width="1"/>
+
+    <text x="60" y="192" font-size="13" fill="#0f172a">name</text>
+    <text x="380" y="192" font-size="12" fill="#475569" text-anchor="end">NVARCHAR(100)</text>
+
+    <text x="60" y="218" font-size="13" fill="#0f172a">type</text>
+    <text x="380" y="218" font-size="12" fill="#475569" text-anchor="end">NVARCHAR(50)</text>
+
+    <text x="60" y="244" font-size="13" fill="#0f172a">location</text>
+    <text x="380" y="244" font-size="12" fill="#475569" text-anchor="end">NVARCHAR(100)</text>
+
+    <text x="60" y="270" font-size="13" fill="#0f172a">latitude</text>
+    <text x="380" y="270" font-size="12" fill="#475569" text-anchor="end">FLOAT</text>
+
+    <text x="60" y="296" font-size="13" fill="#0f172a">longitude</text>
+    <text x="380" y="296" font-size="12" fill="#475569" text-anchor="end">FLOAT</text>
+
+    <text x="60" y="322" font-size="13" fill="#0f172a">installed_at</text>
+    <text x="380" y="322" font-size="12" fill="#475569" text-anchor="end">DATETIME2</text>
+
+    <text x="60" y="348" font-size="13" fill="#0f172a">status</text>
+    <text x="380" y="348" font-size="12" fill="#475569" text-anchor="end">NVARCHAR(20)</text>
+
+    <line x1="40" y1="362" x2="400" y2="362" stroke="#bbf7d0" stroke-width="1"/>
+    <text x="60" y="382" font-size="11" fill="#15803d">indexes: status, type</text>
+  </g>
+
+  <text x="40" y="430" font-size="12" fill="#64748b">Sensor metadata. Set once with the seed script.</text>
+
+  <!-- ============ ADX table ============ -->
+  <g>
+    <rect x="580" y="90" width="360" height="40" rx="8" fill="#2563eb"/>
+    <rect x="580" y="110" width="360" height="20" fill="#2563eb"/>
+    <text x="600" y="116" font-size="15" font-weight="700" fill="#ffffff">Readings</text>
+    <text x="920" y="116" font-size="11" fill="#dbeafe" text-anchor="end">Azure Data Explorer, time-series</text>
+
+    <rect x="580" y="130" width="360" height="244" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+
+    <text x="600" y="160" font-size="13" font-weight="700" fill="#0f172a">FK  sensorId</text>
+    <text x="920" y="160" font-size="12" fill="#475569" text-anchor="end">string</text>
+    <line x1="580" y1="172" x2="940" y2="172" stroke="#bfdbfe" stroke-width="1"/>
+
+    <text x="600" y="192" font-size="13" fill="#0f172a">temperature</text>
+    <text x="920" y="192" font-size="12" fill="#475569" text-anchor="end">real</text>
+
+    <text x="600" y="218" font-size="13" fill="#0f172a">humidity</text>
+    <text x="920" y="218" font-size="12" fill="#475569" text-anchor="end">real</text>
+
+    <text x="600" y="244" font-size="13" fill="#0f172a">airQuality</text>
+    <text x="920" y="244" font-size="12" fill="#475569" text-anchor="end">int</text>
+
+    <text x="600" y="270" font-size="13" fill="#0f172a">noise</text>
+    <text x="920" y="270" font-size="12" fill="#475569" text-anchor="end">int</text>
+
+    <text x="600" y="296" font-size="13" fill="#0f172a">alert</text>
+    <text x="920" y="296" font-size="12" fill="#475569" text-anchor="end">string</text>
+
+    <text x="600" y="322" font-size="13" font-weight="700" fill="#0f172a">timestamp</text>
+    <text x="920" y="322" font-size="12" fill="#475569" text-anchor="end">datetime</text>
+
+    <line x1="580" y1="336" x2="940" y2="336" stroke="#bfdbfe" stroke-width="1"/>
+    <text x="600" y="356" font-size="11" fill="#1d4ed8">streaming ingestion, ordered by timestamp</text>
+  </g>
+
+  <text x="580" y="404" font-size="12" fill="#64748b">Reading stream. Appended continuously by the storage consumer.</text>
+
+  <!-- ============ relationship ============ -->
+  <path d="M400,155 L580,155" fill="none" stroke="#475569" stroke-width="1.8" marker-start="url(#rel)" marker-end="url(#crow)"/>
+  <text x="490" y="146" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">1</text>
+  <text x="560" y="146" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">N</text>
+  <text x="490" y="176" font-size="11" fill="#64748b" text-anchor="middle">sensor_id = sensorId</text>
+
+  <!-- ============ join note ============ -->
+  <rect x="40" y="470" width="900" height="80" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="60" y="498" font-size="13" font-weight="700" fill="#334155">Join at query time</text>
+  <text x="60" y="520" font-size="12" fill="#475569">The API reads metrics from Readings and adds name and location from dbo.sensors, joined on the sensor id,</text>
+  <text x="60" y="538" font-size="12" fill="#475569">so the dashboard shows "MG Road Monitor, AQI 142" rather than "sensor-1".</text>
+</svg>

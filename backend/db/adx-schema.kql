@@ -1,0 +1,19 @@
+// ADX schema for the sensor readings (time-series store). Run against the
+// target database in the Kusto query editor. Column names match the JSON the
+// producer and Spark emit, so the API returns them unchanged.
+
+.create table Readings (
+    sensorId: string,
+    temperature: real,
+    humidity: real,
+    airQuality: int,
+    noise: int,
+    alert: string,
+    timestamp: datetime
+)
+
+// JSON mapping the storage service uses to stream each reading in.
+.create-or-alter table Readings ingestion json mapping "Readings_mapping" '[{"column":"sensorId","Properties":{"Path":"$.sensorId"}},{"column":"temperature","Properties":{"Path":"$.temperature"}},{"column":"humidity","Properties":{"Path":"$.humidity"}},{"column":"airQuality","Properties":{"Path":"$.airQuality"}},{"column":"noise","Properties":{"Path":"$.noise"}},{"column":"alert","Properties":{"Path":"$.alert"}},{"column":"timestamp","Properties":{"Path":"$.timestamp"}}]'
+
+// Streaming ingestion keeps the dashboard near real time.
+.alter table Readings policy streamingingestion enable

@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars (git-ignored) and fill in. The SQL password is best
+# passed via an env var instead of a file:  export TF_VAR_sql_admin_password=...
+subscription_id    = "41569ced-f010-4870-b88b-dd724bd142b7"
+location           = "centralindia"
+prefix             = "smartcity"
+sql_admin_user     = "vikassingh"
+# sql_admin_password = "set via TF_VAR_sql_admin_password"
+budget_amount      = 10
+alert_email        = "vikassingh.dnagrowth@gmail.com"

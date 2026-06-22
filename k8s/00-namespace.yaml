@@ -1,0 +1,12 @@
+# Namespace for all services. Pod Security Standards are enforced at "baseline"
+# and audited/warned against the stricter "restricted" profile.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smart-city
+  labels:
+    name: smart-city
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted

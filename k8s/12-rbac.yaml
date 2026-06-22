@@ -1,0 +1,31 @@
+# Dedicated, least-privilege ServiceAccount for the API: read-only access to its
+# own namespace's pods/configmaps/services, never cluster-admin.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: smart-city-api
+  namespace: smart-city
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: smart-city-api-reader
+  namespace: smart-city
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "configmaps", "services"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: smart-city-api-reader-binding
+  namespace: smart-city
+subjects:
+  - kind: ServiceAccount
+    name: smart-city-api
+    namespace: smart-city
+roleRef:
+  kind: Role
+  name: smart-city-api-reader
+  apiGroup: rbac.authorization.k8s.io

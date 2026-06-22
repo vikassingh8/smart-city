@@ -1,19 +1,37 @@
 {
   "name": "smart-city",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Smart City Environmental Monitoring — distributed backend (Kafka + Azure Data Explorer time-series)",
+  "main": "backend/server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node --env-file-if-exists=.env backend/server.js",
+    "api": "node --env-file-if-exists=.env backend/server.js",
+    "topics": "node --env-file-if-exists=.env backend/admin.js",
+    "producer": "node --env-file-if-exists=.env backend/producer/producer.js",
+    "storage": "node --env-file-if-exists=.env backend/consumer/consumer.js",
+    "seed": "node --env-file-if-exists=.env backend/db/seed.js",
+    "test": "node --test"
   },
-  "keywords": [],
+  "keywords": [
+    "smart-city",
+    "kafka",
+    "iot",
+    "microservices",
+    "time-series",
+    "azure-data-explorer"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
+    "@azure/identity": "^4.5.0",
+    "@azure/keyvault-secrets": "^4.9.0",
+    "applicationinsights": "^3.4.0",
+    "azure-kusto-data": "^6.0.0",
+    "azure-kusto-ingest": "^6.0.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "kafkajs": "^2.2.4",
-    "mongoose": "^9.5.0"
+    "mssql": "^11.0.1"
   }
 }

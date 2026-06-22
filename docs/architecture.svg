@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="660" viewBox="0 0 1240 660" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1240" height="660" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="30" y="40" font-size="22" font-weight="700" fill="#0f172a">Smart City Environmental Monitoring Architecture</text>
+
+  <!-- ============ Lane A: ingestion + messaging + processing ============ -->
+  <text x="30" y="86" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="1">INGESTION AND STREAM PROCESSING</text>
+
+  <!-- IoT Sensors -->
+  <g>
+    <rect x="30" y="96" width="170" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="115" y="124" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">IoT Sensors</text>
+    <text x="115" y="142" font-size="11" fill="#475569" text-anchor="middle">air, noise, temp, humidity</text>
+  </g>
+  <!-- Producer -->
+  <g>
+    <rect x="270" y="96" width="170" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="355" y="120" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Producer</text>
+    <text x="355" y="137" font-size="11" fill="#475569" text-anchor="middle">ingestion service</text>
+    <text x="355" y="152" font-size="11" fill="#475569" text-anchor="middle">Node, KafkaJS</text>
+  </g>
+  <!-- Kafka sensor-data -->
+  <g>
+    <rect x="510" y="96" width="170" height="64" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="595" y="124" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Kafka topic</text>
+    <text x="595" y="142" font-size="12" fill="#475569" text-anchor="middle">sensor-data</text>
+  </g>
+  <!-- Spark -->
+  <g>
+    <rect x="750" y="96" width="170" height="64" rx="8" fill="#fae8ff" stroke="#c026d3" stroke-width="1.5"/>
+    <text x="835" y="120" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Spark Streaming</text>
+    <text x="835" y="137" font-size="11" fill="#475569" text-anchor="middle">filter, enrich</text>
+    <text x="835" y="152" font-size="11" fill="#475569" text-anchor="middle">derive alerts</text>
+  </g>
+  <!-- Kafka processed-data -->
+  <g>
+    <rect x="990" y="96" width="170" height="64" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="1075" y="124" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Kafka topic</text>
+    <text x="1075" y="142" font-size="12" fill="#475569" text-anchor="middle">processed-data</text>
+  </g>
+
+  <!-- Lane A arrows -->
+  <line x1="200" y1="128" x2="262" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="231" y="121" font-size="10" fill="#475569" text-anchor="middle">JSON</text>
+  <line x1="440" y1="128" x2="502" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="471" y="121" font-size="10" fill="#475569" text-anchor="middle">publish</text>
+  <line x1="680" y1="128" x2="742" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="711" y="121" font-size="10" fill="#475569" text-anchor="middle">consume</text>
+  <line x1="920" y1="128" x2="982" y2="128" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="951" y="121" font-size="10" fill="#475569" text-anchor="middle">write</text>
+
+  <!-- ============ Lane B: storage ============ -->
+  <text x="30" y="214" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="1">STORAGE</text>
+
+  <!-- Azure SQL -->
+  <g>
+    <rect x="510" y="224" width="170" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="595" y="248" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Azure SQL</text>
+    <text x="595" y="265" font-size="11" fill="#475569" text-anchor="middle">sensor metadata</text>
+    <text x="595" y="280" font-size="10" fill="#94a3b8" text-anchor="middle">relational</text>
+  </g>
+  <!-- ADX -->
+  <g>
+    <rect x="750" y="224" width="170" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="835" y="248" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Azure Data Explorer</text>
+    <text x="835" y="265" font-size="11" fill="#475569" text-anchor="middle">readings</text>
+    <text x="835" y="280" font-size="10" fill="#94a3b8" text-anchor="middle">time-series</text>
+  </g>
+  <!-- Storage consumer -->
+  <g>
+    <rect x="990" y="224" width="170" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="1075" y="248" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Storage consumer</text>
+    <text x="1075" y="265" font-size="11" fill="#475569" text-anchor="middle">Node, Kusto ingest</text>
+  </g>
+
+  <!-- processed-data -> storage consumer (down) -->
+  <line x1="1075" y1="160" x2="1075" y2="222" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- storage -> ADX (left) -->
+  <line x1="990" y1="256" x2="922" y2="256" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="956" y="249" font-size="10" fill="#475569" text-anchor="middle">ingest</text>
+
+  <!-- ============ Lane C: serving ============ -->
+  <text x="30" y="342" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="1">SERVING</text>
+
+  <!-- City admins -->
+  <g>
+    <rect x="30" y="352" width="170" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="115" y="380" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">City administrators</text>
+    <text x="115" y="398" font-size="11" fill="#475569" text-anchor="middle">browser</text>
+  </g>
+  <!-- Frontend -->
+  <g>
+    <rect x="270" y="352" width="170" height="64" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="355" y="380" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">Dashboard</text>
+    <text x="355" y="398" font-size="11" fill="#475569" text-anchor="middle">React, Vite, nginx</text>
+  </g>
+  <!-- API -->
+  <g>
+    <rect x="510" y="352" width="170" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="595" y="380" font-size="14" font-weight="600" fill="#0f172a" text-anchor="middle">REST API</text>
+    <text x="595" y="398" font-size="11" fill="#475569" text-anchor="middle">Express</text>
+  </g>
+
+  <!-- admins -> frontend -->
+  <line x1="200" y1="384" x2="262" y2="384" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- frontend -> api -->
+  <line x1="440" y1="384" x2="502" y2="384" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="471" y="377" font-size="10" fill="#475569" text-anchor="middle">REST</text>
+
+  <!-- ADX -> API (KQL) -->
+  <path d="M790,288 L790,384 L502,384" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="690" y="378" font-size="10" fill="#475569" text-anchor="middle">KQL read</text>
+  <!-- Azure SQL -> API -->
+  <path d="M560,288 L560,352" fill="none" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="560" y="318" font-size="10" fill="#475569" text-anchor="middle">T-SQL</text>
+
+  <!-- ============ Platform band ============ -->
+  <rect x="30" y="448" width="1130" height="186" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="50" y="474" font-size="13" font-weight="700" fill="#334155">Azure platform</text>
+
+  <!-- platform boxes row 1 -->
+  <g>
+    <rect x="50" y="494" width="255" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="177" y="516" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">AKS (Kubernetes)</text>
+    <text x="177" y="533" font-size="10" fill="#475569" text-anchor="middle">deployments, HPA, RBAC, PSS</text>
+  </g>
+  <g>
+    <rect x="325" y="494" width="255" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="452" y="516" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Container Registry</text>
+    <text x="452" y="533" font-size="10" fill="#475569" text-anchor="middle">backend, frontend images</text>
+  </g>
+  <g>
+    <rect x="600" y="494" width="255" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="727" y="516" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Key Vault</text>
+    <text x="727" y="533" font-size="10" fill="#475569" text-anchor="middle">secrets via CSI driver</text>
+  </g>
+  <g>
+    <rect x="875" y="494" width="265" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="1007" y="516" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Azure Monitor</text>
+    <text x="1007" y="533" font-size="10" fill="#475569" text-anchor="middle">App Insights, Log Analytics</text>
+  </g>
+
+  <!-- platform boxes row 2 -->
+  <g>
+    <rect x="50" y="558" width="350" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="225" y="580" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Azure DevOps (CI/CD)</text>
+    <text x="225" y="597" font-size="10" fill="#475569" text-anchor="middle">test, build, push to ACR, deploy</text>
+  </g>
+  <g>
+    <rect x="420" y="558" width="350" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="595" y="580" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Terraform (IaC)</text>
+    <text x="595" y="597" font-size="10" fill="#475569" text-anchor="middle">AKS, ACR, SQL, ADX, Key Vault</text>
+  </g>
+  <g>
+    <rect x="790" y="558" width="350" height="52" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+    <text x="965" y="580" font-size="13" font-weight="600" fill="#0f172a" text-anchor="middle">Cost Management</text>
+    <text x="965" y="597" font-size="10" fill="#475569" text-anchor="middle">monthly budget and alerts</text>
+  </g>
+</svg>

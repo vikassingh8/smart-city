@@ -1,0 +1,19 @@
+# Non-secret configuration shared by the services (in-cluster DNS names).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smart-city-config
+  namespace: smart-city
+data:
+  KAFKA_BROKERS: "kafka:9092"
+  # Azure Data Explorer endpoint (pods authenticate with the AKS managed
+  # identity, granted Ingestor/Viewer in Terraform - no secret needed).
+  KUSTO_QUERY_URI: "https://smartcity-adx.centralindia.kusto.windows.net"
+  KUSTO_DATABASE: "smartcity"
+  TOPIC_RAW: "sensor-data"
+  TOPIC_PROCESSED: "processed-data"
+  API_PORT: "3000"
+  PRODUCE_INTERVAL_MS: "2000"
+  SQL_PORT: "1433"
+  SQL_ENCRYPT: "true"
+  SQL_TRUST_CERT: "false"

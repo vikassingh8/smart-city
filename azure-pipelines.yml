@@ -1,0 +1,105 @@
+# Azure DevOps pipeline: test -> build images -> push to Azure Container
+# Registry (ACR) -> deploy to AKS with a staging -> production approval gate via
+# Environments.
+#
+# Service connections / variables to configure in Azure DevOps:
+#   - acrServiceConnection : Docker Registry service connection to your ACR
+#   - azureSubscription    : ARM service connection
+#   - ACR_LOGIN_SERVER     : e.g. smartcityacr.azurecr.io
+#   - AKS_RESOURCE_GROUP, AKS_CLUSTER_NAME
+
+trigger:
+  branches:
+    include: [main]
+
+variables:
+  backendImage: '$(ACR_LOGIN_SERVER)/smart-city-backend'
+  frontendImage: '$(ACR_LOGIN_SERVER)/smart-city-frontend'
+  tag: '$(Build.SourceVersion)'
+
+stages:
+  - stage: Test
+    jobs:
+      - job: unit
+        pool: { vmImage: 'ubuntu-latest' }
+        steps:
+          - task: NodeTool@0
+            inputs: { versionSpec: '24.x' }
+          - script: npm ci && npm test
+            displayName: 'Install & unit tests'
+
+  - stage: Build
+    dependsOn: Test
+    jobs:
+      - job: images
+        pool: { vmImage: 'ubuntu-latest' }
+        steps:
+          - task: Docker@2
+            displayName: 'Build & push backend to ACR'
+            inputs:
+              containerRegistry: 'acrServiceConnection'
+              repository: 'smart-city-backend'
+              command: 'buildAndPush'
+              Dockerfile: 'Dockerfile'
+              tags: |
+                latest
+                $(tag)
+          - task: Docker@2
+            displayName: 'Build & push frontend to ACR'
+            inputs:
+              containerRegistry: 'acrServiceConnection'
+              repository: 'smart-city-frontend'
+              command: 'buildAndPush'
+              Dockerfile: 'frontend/Dockerfile'
+              buildContext: 'frontend'
+              tags: |
+                latest
+                $(tag)
+
+  - stage: DeployStaging
+    dependsOn: Build
+    jobs:
+      - deployment: staging
+        environment: 'smart-city-staging'   # add approvals/checks here = gate
+        pool: { vmImage: 'ubuntu-latest' }
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: 'azureSubscription'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az aks get-credentials -g $(AKS_RESOURCE_GROUP) -n $(AKS_CLUSTER_NAME) --overwrite-existing
+                      cd k8s
+                      kustomize edit set image \
+                        smart-city-backend=$(backendImage):$(tag) \
+                        smart-city-frontend=$(frontendImage):$(tag)
+                      kubectl apply -k .
+                      kubectl -n smart-city rollout status deploy/api --timeout=180s
+
+  - stage: DeployProduction
+    dependsOn: DeployStaging
+    jobs:
+      - deployment: production
+        environment: 'smart-city-production'  # require reviewers here = prod gate
+        pool: { vmImage: 'ubuntu-latest' }
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: 'azureSubscription'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az aks get-credentials -g $(AKS_RESOURCE_GROUP) -n $(AKS_CLUSTER_NAME) --overwrite-existing
+                      cd k8s
+                      kustomize edit set image \
+                        smart-city-backend=$(backendImage):$(tag) \
+                        smart-city-frontend=$(frontendImage):$(tag)
+                      kubectl apply -k .
+                      kubectl -n smart-city rollout status deploy/api --timeout=180s

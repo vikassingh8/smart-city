@@ -1,0 +1,25 @@
+# Storage service - consumes processed-data, writes to Azure Data Explorer
+# (time-series). Authenticates to ADX with the AKS managed identity.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage
+  namespace: smart-city
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: storage }
+  template:
+    metadata:
+      labels: { app: storage }
+    spec:
+      containers:
+        - name: storage
+          image: smart-city-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "backend/consumer/consumer.js"]
+          envFrom:
+            - configMapRef: { name: smart-city-config }
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "250m", memory: "256Mi" }

@@ -1,21 +1,122 @@
-services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:6.2.0
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+# Smart City — local backend stack
+# Modern Kafka in KRaft mode (no Zookeeper) + all microservices.
+# The time-series store is Azure Data Explorer (cloud); the storage and api
+# services connect to it using the KUSTO_*/AAD_* values from the host .env.
 
+services:
+  # ---------- Infrastructure ----------
   kafka:
-    image: confluentinc/cp-kafka:6.2.0
+    image: confluentinc/cp-kafka:7.8.0
     container_name: kafka
     ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
+      - "9092:9092"   # internal (other containers)
+      - "29092:29092" # host access (your machine)
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: 5L6g3nShT-eMCtK--X86sw
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # ---------- One-shot: create Kafka topics ----------
+  topic-setup:
+    build: .
+    command: node backend/admin.js
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    restart: "no"
+
+  # ---------- Microservices ----------
+  producer:
+    build: .
+    command: node backend/producer/producer.js
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    restart: unless-stopped
+
+  # Stream processing with Apache Spark Structured Streaming.
+  # (Reads sensor-data, enriches with alerts, writes processed-data.)
+  # The --packages flag pulls the Spark-Kafka connector on first run.
+  spark-processor:
+    image: apache/spark:3.5.1
+    container_name: spark-processor
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+    volumes:
+      - ./backend/spark:/app
+    command: >
+      /opt/spark/bin/spark-submit
+      --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1
+      --conf spark.jars.ivy=/tmp/.ivy2
+      /app/stream.py
+    restart: unless-stopped
+
+  storage:
+    build: .
+    command: node backend/consumer/consumer.js
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      # Azure Data Explorer time-series store — values come from the host .env.
+      KUSTO_QUERY_URI: ${KUSTO_QUERY_URI}
+      KUSTO_DATABASE: ${KUSTO_DATABASE:-smartcity}
+      AAD_APP_ID: ${AAD_APP_ID}
+      AAD_APP_KEY: ${AAD_APP_KEY}
+      AAD_TENANT_ID: ${AAD_TENANT_ID}
+    restart: unless-stopped
+
+  api:
+    build: .
+    command: node backend/server.js
+    ports:
+      - "3000:3000"
+    environment:
+      API_PORT: 3000
+      # Azure Data Explorer time-series store — values come from the host .env.
+      KUSTO_QUERY_URI: ${KUSTO_QUERY_URI}
+      KUSTO_DATABASE: ${KUSTO_DATABASE:-smartcity}
+      AAD_APP_ID: ${AAD_APP_ID}
+      AAD_APP_KEY: ${AAD_APP_KEY}
+      AAD_TENANT_ID: ${AAD_TENANT_ID}
+      # Azure SQL metadata store — values come from the host .env (see .env.example).
+      SQL_SERVER: ${SQL_SERVER}
+      SQL_DATABASE: ${SQL_DATABASE}
+      SQL_USER: ${SQL_USER}
+      SQL_PASSWORD: ${SQL_PASSWORD}
+      SQL_PORT: ${SQL_PORT:-1433}
+      SQL_ENCRYPT: ${SQL_ENCRYPT:-true}
+      SQL_TRUST_CERT: ${SQL_TRUST_CERT:-false}
+    restart: unless-stopped
+
+  # React dashboard (nginx), proxies /api + /health to the api service.
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped

@@ -1,0 +1,23 @@
+# One-shot Job: create the Kafka topics (runs admin.js), then exits.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: topic-setup
+  namespace: smart-city
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels: { app: topic-setup }
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: topic-setup
+          image: smart-city-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "backend/admin.js"]
+          envFrom:
+            - configMapRef: { name: smart-city-config }
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "250m", memory: "256Mi" }
