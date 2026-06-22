@@ -3,9 +3,9 @@
 # Environments.
 #
 # Service connections / variables to configure in Azure DevOps:
-#   - acrServiceConnection : Docker Registry service connection to your ACR
-#   - azureSubscription    : ARM service connection
-#   - ACR_LOGIN_SERVER     : e.g. smartcityacr.azurecr.io
+#   - azureSubscription : ARM service connection (used for ACR build and AKS deploy)
+#   - ACR_NAME          : e.g. smartcityacr
+#   - ACR_LOGIN_SERVER  : e.g. smartcityacr.azurecr.io
 #   - AKS_RESOURCE_GROUP, AKS_CLUSTER_NAME
 
 trigger:
@@ -34,30 +34,23 @@ stages:
       - job: images
         pool: { vmImage: 'ubuntu-latest' }
         steps:
-          - task: Docker@2
-            displayName: 'Build & push backend to ACR'
+          - task: AzureCLI@2
+            displayName: 'Build & push images to ACR'
             inputs:
-              containerRegistry: 'acrServiceConnection'
-              repository: 'smart-city-backend'
-              command: 'buildAndPush'
-              Dockerfile: 'Dockerfile'
-              tags: |
-                latest
-                $(tag)
-          - task: Docker@2
-            displayName: 'Build & push frontend to ACR'
-            inputs:
-              containerRegistry: 'acrServiceConnection'
-              repository: 'smart-city-frontend'
-              command: 'buildAndPush'
-              Dockerfile: 'frontend/Dockerfile'
-              buildContext: 'frontend'
-              tags: |
-                latest
-                $(tag)
+              azureSubscription: 'azureSubscription'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az acr build --registry $(ACR_NAME) -f Dockerfile \
+                  --image smart-city-backend:$(tag) --image smart-city-backend:latest .
+                az acr build --registry $(ACR_NAME) -f frontend/Dockerfile \
+                  --image smart-city-frontend:$(tag) --image smart-city-frontend:latest frontend
 
   - stage: DeployStaging
     dependsOn: Build
+    # Deploy only runs once AKS exists; set DEPLOY_ENABLED=true (and the AKS_*
+    # variables) at demo time. Until then these stages are skipped, not failed.
+    condition: and(succeeded(), eq(variables['DEPLOY_ENABLED'], 'true'))
     jobs:
       - deployment: staging
         environment: 'smart-city-staging'   # add approvals/checks here = gate
@@ -82,6 +75,7 @@ stages:
 
   - stage: DeployProduction
     dependsOn: DeployStaging
+    condition: and(succeeded(), eq(variables['DEPLOY_ENABLED'], 'true'))
     jobs:
       - deployment: production
         environment: 'smart-city-production'  # require reviewers here = prod gate
