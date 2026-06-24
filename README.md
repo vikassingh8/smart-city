@@ -170,7 +170,7 @@ terraform apply        # provision (billable)   ·   terraform destroy  # ~$0
 ## Security & operations
 
 - **Secrets:** Azure **Key Vault** (`backend/db/keyvault.js`; set `KEYVAULT_NAME`). On
-  AKS, the Secrets Store CSI driver mounts them (`k8s/13-secretproviderclass.yaml`).
+  AKS, the Secrets Store CSI driver mounts them (`k8s/secrets.yaml`).
 - **Monitoring:** **Application Insights** auto-instruments the API (set
   `APPLICATIONINSIGHTS_CONNECTION_STRING`); logs go to **Log Analytics**.
 - **Cost:** an Azure **budget** with email alerts (Terraform + `terraform/`).

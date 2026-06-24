@@ -7,18 +7,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: smart-city
 resources:
-  - 00-namespace.yaml
-  - 01-configmap.yaml
-  - 03-kafka.yaml
-  - 05-topic-setup-job.yaml
-  - 06-producer.yaml
-  - 07-spark-processor.yaml
-  - 09-storage.yaml
-  - 10-api.yaml
-  - 11-frontend.yaml
-  - 12-rbac.yaml
-# Secrets are applied separately (kubectl create secret / Key Vault CSI), so the
-# example secret and SecretProviderClass are intentionally NOT listed here.
+  - namespace.yaml
+  - config.yaml
+  - kafka.yaml
+  - workloads.yaml
+# Secrets are applied separately (kubectl create secret / Key Vault CSI), so
+# secrets.yaml is intentionally NOT listed here.
 
 images:
   - name: smart-city-backend

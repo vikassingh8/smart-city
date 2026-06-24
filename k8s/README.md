@@ -7,18 +7,12 @@ requests/limits, HPA autoscaling, RBAC, and Pod Security Standards.
 
 | File | What |
 |------|------|
-| `00-namespace.yaml` | Namespace + Pod Security Standards (baseline enforced) |
-| `01-configmap.yaml` | Non-secret config (broker URLs, ADX endpoints, topics) |
-| `02-secret.example.yaml` | Secret template (do **not** commit real values) |
-| `03-kafka.yaml` | Kafka (KRaft) Deployment + headless Service |
-| `05-topic-setup-job.yaml` | One-shot Job to create topics |
-| `06-producer.yaml` | Ingestion |
-| `07-spark-processor.yaml` | Stream processor (Apache Spark) |
-| `09-storage.yaml` | Storage consumer |
-| `10-api.yaml` | API Deployment + Service + **HPA** |
-| `11-frontend.yaml` | React dashboard + Service |
-| `12-rbac.yaml` | Least-privilege ServiceAccount + Role + RoleBinding |
-| `13-secretproviderclass.yaml` | Azure Key Vault → Secret via CSI driver (AKS) |
+| `namespace.yaml` | Namespace + Pod Security Standards (baseline enforced) |
+| `config.yaml` | Non-secret config (broker URLs, ADX endpoints, topics) + API RBAC |
+| `kafka.yaml` | Kafka (KRaft) Deployment + headless Service + topic-setup Job |
+| `workloads.yaml` | Producer, Spark processor, storage, API (+ Service + HPA), frontend |
+| `secrets.yaml` | Secret template + Key Vault SecretProviderClass (applied separately) |
+| `kustomization.yaml` | Kustomize entrypoint (`kubectl apply -k k8s/`) |
 
 ## Local demo (free - Docker Desktop K8s or kind)
 

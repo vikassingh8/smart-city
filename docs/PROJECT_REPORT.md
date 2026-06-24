@@ -157,7 +157,7 @@ notifications. `terraform init && terraform validate` pass; `apply` provisions,
 
 - **Secrets:** Azure **Key Vault** holds the SQL credentials. The API hydrates
   them at startup via `DefaultAzureCredential` (`backend/db/keyvault.js`); on AKS the
-  **Secrets Store CSI driver** (`k8s/13-secretproviderclass.yaml`) mounts them.
+  **Secrets Store CSI driver** (`k8s/secrets.yaml`) mounts them.
   No secret material in git (`.env` git-ignored; `.env.example` committed).
 - **Access control:** Kubernetes **RBAC** — a dedicated ServiceAccount with a
   read-only Role (never cluster-admin).
