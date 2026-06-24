@@ -11,6 +11,11 @@ data:
   # identity, granted Ingestor/Viewer in Terraform - no secret needed).
   KUSTO_QUERY_URI: "https://smartcityadx.centralindia.kusto.windows.net"
   KUSTO_DATABASE: "smartcity"
+  # AKS kubelet managed-identity client id, used to disambiguate which node
+  # identity DefaultAzureCredential authenticates as (the node carries more than
+  # one). Granted Ingestor/Viewer on the ADX database. Changes on each cluster
+  # recreate - update to the new kubelet clientId after `terraform apply`.
+  AZURE_CLIENT_ID: "c7ee8118-5f4c-4bc4-8687-b8f180e36a55"
   TOPIC_RAW: "sensor-data"
   TOPIC_PROCESSED: "processed-data"
   API_PORT: "3000"
