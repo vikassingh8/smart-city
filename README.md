@@ -4,14 +4,14 @@ A distributed backend that ingests real-time IoT environmental data (air quality
 noise, temperature, humidity), processes the stream, stores it in a time-series
 database, and serves aggregated metrics over a REST API.
 
-> **Phase 1 (this repo): local backend.** Cloud/Azure deployment (AKS, Key Vault,
+> Phase 1 (this repo): local backend. Cloud/Azure deployment (AKS, Key Vault,
 > CI/CD, IaC, monitoring) is planned for Phase 2.
 
 ## Architecture
 
 ![Smart City architecture](docs/architecture.svg)
 
-**Data flow:** Sensors → Kafka `sensor-data` → Processor (filter/enrich/alert) →
+Data flow: Sensors → Kafka `sensor-data` → Processor (filter/enrich/alert) →
 Kafka `processed-data` → Storage → Azure Data Explorer (time-series) → REST API.
 
 ### Microservices
@@ -19,22 +19,22 @@ Kafka `processed-data` → Storage → Azure Data Explorer (time-series) → RES
 | Service       | File                    | Role                                              |
 |---------------|-------------------------|---------------------------------------------------|
 | Ingestion     | `backend/producer/producer.js`  | Simulates sensors, publishes to `sensor-data`     |
-| **Stream proc.** | **`backend/spark/stream.py`** | **Apache Spark Structured Streaming** — filters/enriches readings, adds alerts |
+| Stream proc. | `backend/spark/stream.py` | Apache Spark Structured Streaming — filters/enriches readings, adds alerts |
 | Storage       | `backend/consumer/consumer.js`  | Persists processed readings to Azure Data Explorer |
 | API           | `backend/server.js`     | REST API for latest data, summaries, alerts       |
 | Topic setup   | `backend/admin.js`      | Creates Kafka topics (one-shot)                   |
 
 ### Why these choices
 
-- **Kafka (KRaft mode):** decouples producers from consumers, buffers bursts,
+- Kafka (KRaft mode): decouples producers from consumers, buffers bursts,
   and lets each stage scale independently. KRaft removes the legacy Zookeeper.
-- **Apache Spark Structured Streaming:** the recommended engine for real-time
+- Apache Spark Structured Streaming: the recommended engine for real-time
   filtering, aggregation, and enrichment at scale. Reads from Kafka, derives
   per-reading alerts, and writes back to Kafka.
-- **Azure Data Explorer (time-series):** the Azure-native time-series database
+- Azure Data Explorer (time-series): the Azure-native time-series database
   for high-write, timestamped IoT data. Streaming ingestion keeps the dashboard
   near real time, and KQL drives the aggregation/alert queries.
-- **Azure SQL (relational):** stores slow-changing **sensor metadata** (name,
+- Azure SQL (relational): stores slow-changing sensor metadata (name,
   type, location, coordinates, status). Keeping metadata relational and readings
   time-series is the standard split for write-heavy IoT; the API joins the two so
   dashboards show "AQI 142 at MG Road" instead of just "sensor-1".
@@ -55,7 +55,7 @@ docker compose up --build
 ```
 
 The `topic-setup` service creates the Kafka topics automatically, then the
-producer → **Spark processor** → storage pipeline starts and the API is exposed
+producer → Spark processor → storage pipeline starts and the API is exposed
 on `http://localhost:3000`.
 
 > On first run the Spark service downloads the Spark–Kafka connector jars
@@ -73,7 +73,7 @@ npm run storage     # persist to Azure Data Explorer
 npm run api         # REST API on :3000
 ```
 
-For the **stream processing** step, run the Spark job:
+For the stream processing step, run the Spark job:
 
 ```bash
 docker compose up spark-processor
@@ -139,8 +139,8 @@ npm test          # node:test — alert classification unit tests
 
 ## Kubernetes (AKS-ready)
 
-Full manifests in `k8s/` — Deployments, Services, ConfigMap/Secret, **resource
-limits**, **HPA autoscaling**, **RBAC**, and **Pod Security Standards**. Deploy
+Full manifests in `k8s/` — Deployments, Services, ConfigMap/Secret, resource
+limits, HPA autoscaling, RBAC, and Pod Security Standards. Deploy
 locally (Docker Desktop K8s / kind) or to AKS:
 
 ```bash
@@ -169,11 +169,11 @@ terraform apply        # provision (billable)   ·   terraform destroy  # ~$0
 
 ## Security & operations
 
-- **Secrets:** Azure **Key Vault** (`backend/db/keyvault.js`; set `KEYVAULT_NAME`). On
+- Secrets: Azure Key Vault (`backend/db/keyvault.js`; set `KEYVAULT_NAME`). On
   AKS, the Secrets Store CSI driver mounts them (`k8s/secrets.yaml`).
-- **Monitoring:** **Application Insights** auto-instruments the API (set
-  `APPLICATIONINSIGHTS_CONNECTION_STRING`); logs go to **Log Analytics**.
-- **Cost:** an Azure **budget** with email alerts (Terraform + `terraform/`).
+- Monitoring: Application Insights auto-instruments the API (set
+  `APPLICATIONINSIGHTS_CONNECTION_STRING`); logs go to Log Analytics.
+- Cost: an Azure budget with email alerts (Terraform + `terraform/`).
 
 ## Documentation
 
@@ -199,6 +199,6 @@ terraform apply        # provision (billable)   ·   terraform destroy  # ~$0
 ## Tech stack
 
 Node.js 24 · Express 5 · KafkaJS · Confluent Kafka (KRaft, no Zookeeper) ·
-**Apache Spark 3.5 (Structured Streaming)** · **Azure Data Explorer (time-series,
-`azure-kusto-data`/`azure-kusto-ingest`)** · **Azure SQL (relational metadata,
-`mssql` driver)** · Docker Compose.
+Apache Spark 3.5 (Structured Streaming) · Azure Data Explorer (time-series,
+`azure-kusto-data`/`azure-kusto-ingest`) · Azure SQL (relational metadata,
+`mssql` driver) · Docker Compose.

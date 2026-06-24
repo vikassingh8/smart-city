@@ -48,10 +48,10 @@ kubectl -n smart-city port-forward svc/frontend 8080:80
 
 ## AKS
 
-On AKS the `LoadBalancer` Services get real external IPs (no port-forward), use
-`07-spark-processor.yaml` for Spark, and `13-secretproviderclass.yaml` pulls SQL
-secrets from Azure Key Vault. The time-series store is **Azure Data Explorer**
-(cloud) - set its endpoints in `01-configmap.yaml`; pods authenticate with the
+On AKS the `LoadBalancer` Services get real external IPs (no port-forward), and
+the `SecretProviderClass` in `secrets.yaml` pulls SQL secrets from Azure Key
+Vault. The time-series store is Azure Data Explorer (cloud) - set its endpoints
+in `config.yaml`; pods authenticate with the
 AKS managed identity (granted Ingestor/Viewer in Terraform), so no ADX secret is
 stored. The Terraform in `terraform/` provisions the cluster + ADX; the Azure
 DevOps pipeline builds, pushes to ACR, and `kubectl apply -k`.

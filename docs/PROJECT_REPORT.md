@@ -1,6 +1,6 @@
 # Smart City Environmental Monitoring — Project Report
 
-**Masters Software Engineering — Capstone**
+Masters Software Engineering — Capstone
 Designing a Scalable Smart City Environmental Monitoring System Using
 Distributed Systems Principles & Cloud Automation.
 
@@ -34,14 +34,14 @@ Distributed Systems Principles & Cloud Automation.
 
 ![Smart City architecture](architecture.svg)
 
-**Communication protocols:** Kafka (async messaging) between pipeline stages;
+Communication protocols: Kafka (async messaging) between pipeline stages;
 REST/HTTP between the dashboard and API, and between the API and the databases.
 
 ### 2.1 Microservices
 | Service | Tech | Responsibility |
 |---------|------|----------------|
 | Producer | Node + KafkaJS | Simulate sensors → `sensor-data` |
-| Stream processor | **Apache Spark Structured Streaming** (`backend/spark/stream.py`) | Filter/enrich, derive alerts → `processed-data` |
+| Stream processor | Apache Spark Structured Streaming (`backend/spark/stream.py`) | Filter/enrich, derive alerts → `processed-data` |
 | Storage | Node + `azure-kusto-ingest` | `processed-data` → Azure Data Explorer time-series |
 | API | Express 5 | REST over Azure Data Explorer (KQL) + Azure SQL |
 | Frontend | React + Vite + nginx | Live dashboard |
@@ -54,10 +54,10 @@ REST/HTTP between the dashboard and API, and between the API and the databases.
 
 Two stores, each matched to its workload (the standard IoT split):
 
-**Time-series (Azure Data Explorer):** the high-write reading stream. ADX is the
+Time-series (Azure Data Explorer): the high-write reading stream. ADX is the
 Azure-native time-series database recommended for this workload: column-store
-storage tuned for append-heavy telemetry, **streaming ingestion** for near
-real-time visibility, and **KQL** for fast time-window aggregation. The storage
+storage tuned for append-heavy telemetry, streaming ingestion for near
+real-time visibility, and KQL for fast time-window aggregation. The storage
 service streams each processed reading into a single `Readings` table via a JSON
 ingestion mapping (`backend/db/adx-schema.kql`):
 
@@ -74,12 +74,11 @@ The API's read endpoints map one-to-one to KQL queries (latest-per-sensor via
 `where timestamp >= ago(Nm) | summarize avg(...) by sensorId`; alerts via
 `where alert != "NORMAL"`).
 
-> *Why ADX over MongoDB:* the requirement names a time-series database (e.g.
-> Azure Data Explorer). ADX keeps the whole stack Azure-native (Key Vault, AKS
-> managed identity, App Insights) and provides purpose-built time-series
-> analytics with KQL, rather than a general-purpose document store.
+ADX is preferred over a general-purpose document store such as MongoDB here: it
+keeps the stack Azure-native (Key Vault, AKS managed identity, App Insights) and
+gives purpose-built time-series analytics with KQL.
 
-**Relational (Azure SQL):** slow-changing sensor metadata.
+Relational (Azure SQL): slow-changing sensor metadata.
 
 ```sql
 CREATE TABLE dbo.sensors (
@@ -94,7 +93,7 @@ CREATE TABLE dbo.sensors (
 -- Indexed on status and type for dashboard filters.
 ```
 
-The API **joins** the two: readings (ADX) are enriched with name/location (SQL)
+The API joins the two: readings (ADX) are enriched with name/location (SQL)
 so the dashboard shows "AQI 142 at MG Road" rather than "sensor-1". Scripts:
 `backend/db/adx-schema.kql` (ADX table + ingestion mapping), `backend/db/adx.js` (Kusto ingest +
 query helpers), `backend/db/schema.sql` (SQL DDL), `backend/db/seed.js`
@@ -116,14 +115,14 @@ thresholds are documented and unit-tested in `backend/processor/classify.js`
 
 ## 5. Containerisation & orchestration
 
-- **Docker:** one production-grade multi-purpose Node image (layer-cached
+- Docker: one production-grade multi-purpose Node image (layer-cached
   `npm ci --omit=dev`) + a multi-stage nginx image for the frontend.
-- **Docker Compose:** full local stack (Kafka KRaft, all services, dashboard);
+- Docker Compose: full local stack (Kafka KRaft, all services, dashboard);
   the time-series store is Azure Data Explorer (cloud), configured via env.
-- **Kubernetes (`k8s/`):** Deployments, Services, ConfigMap/Secret,
-  **resource requests+limits on every pod**, **HPA autoscaling** (API 2→6 on
+- Kubernetes (`k8s/`): Deployments, Services, ConfigMap/Secret,
+  resource requests+limits on every pod, HPA autoscaling (API 2→6 on
   CPU/memory), readiness/liveness probes, a one-shot topic-setup Job,
-  **RBAC** (least-privilege ServiceAccount), and **Pod Security Standards**
+  RBAC (least-privilege ServiceAccount), and Pod Security Standards
   (baseline enforced). `kubectl apply -k k8s/`.
 
 ---
@@ -131,13 +130,13 @@ thresholds are documented and unit-tested in `backend/processor/classify.js`
 ## 6. CI/CD
 
 `azure-pipelines.yml` (Azure DevOps Pipelines):
-1. **test** — `npm ci && npm test`.
-2. **build** — build & push backend + frontend images to **Azure Container
-   Registry (ACR)**, tagged `latest` and the commit SHA.
-3. **deploy-staging** — `kustomize set image` + `kubectl apply -k` to AKS;
+1. test — `npm ci && npm test`.
+2. build — build & push backend + frontend images to Azure Container
+   Registry (ACR), tagged `latest` and the commit SHA.
+3. deploy-staging — `kustomize set image` + `kubectl apply -k` to AKS;
    gated by a *staging* Environment.
-4. **deploy-production** — same, gated by a *production* Environment with
-   **required reviewers = approval gate**.
+4. deploy-production — same, gated by a *production* Environment with
+   required reviewers = approval gate.
 
 ---
 
@@ -155,26 +154,26 @@ notifications. `terraform init && terraform validate` pass; `apply` provisions,
 
 ## 8. Security
 
-- **Secrets:** Azure **Key Vault** holds the SQL credentials. The API hydrates
+- Secrets: Azure Key Vault holds the SQL credentials. The API hydrates
   them at startup via `DefaultAzureCredential` (`backend/db/keyvault.js`); on AKS the
-  **Secrets Store CSI driver** (`k8s/secrets.yaml`) mounts them.
+  Secrets Store CSI driver (`k8s/secrets.yaml`) mounts them.
   No secret material in git (`.env` git-ignored; `.env.example` committed).
-- **Access control:** Kubernetes **RBAC** — a dedicated ServiceAccount with a
+- Access control: Kubernetes RBAC — a dedicated ServiceAccount with a
   read-only Role (never cluster-admin).
-- **Pod hardening:** **Pod Security Standards** (baseline enforced, restricted
+- Pod hardening: Pod Security Standards (baseline enforced, restricted
   audited) at the namespace.
-- **Transport:** TLS 1.2 enforced to Azure SQL; SQL firewall rules restrict
+- Transport: TLS 1.2 enforced to Azure SQL; SQL firewall rules restrict
   access.
 
 ---
 
 ## 9. Monitoring & cost governance
 
-- **Application Insights** (workspace-based) auto-instruments the API
+- Application Insights (workspace-based) auto-instruments the API
   (requests, dependencies, exceptions).
-- **Log Analytics** collects container/cluster logs (AKS monitoring add-on).
-- **Azure Monitor** action group + metric alert (AKS CPU > 80%) → email.
-- **Cost Management** budget ($10/mo) with an 80% actual / 100% forecast email
+- Log Analytics collects container/cluster logs (AKS monitoring add-on).
+- Azure Monitor action group + metric alert (AKS CPU > 80%) → email.
+- Cost Management budget ($10/mo) with an 80% actual / 100% forecast email
   alert.
 - App health surfaced at `GET /health` (ADX + SQL state).
 
