@@ -138,8 +138,10 @@ metadata:
 spec:
   type: LoadBalancer   # external IP on AKS; on local clusters use port-forward
   selector: { app: api }
+  # Port 3000 matches the app and the frontend nginx proxy (proxy_pass api:3000),
+  # so the dashboard reaches the API the same way under compose and Kubernetes.
   ports:
-    - { port: 80, targetPort: 3000 }
+    - { port: 3000, targetPort: 3000 }
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
