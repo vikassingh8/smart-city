@@ -8,7 +8,7 @@ data:
   KAFKA_BROKERS: "kafka:9092"
   # Azure Data Explorer endpoint (pods authenticate with the AKS managed
   # identity, granted Ingestor/Viewer in Terraform - no secret needed).
-  KUSTO_QUERY_URI: "https://smartcity-adx.centralindia.kusto.windows.net"
+  KUSTO_QUERY_URI: "https://smartcityadx.centralindia.kusto.windows.net"
   KUSTO_DATABASE: "smartcity"
   TOPIC_RAW: "sensor-data"
   TOPIC_PROCESSED: "processed-data"
